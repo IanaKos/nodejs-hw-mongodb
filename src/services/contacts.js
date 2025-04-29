@@ -40,7 +40,6 @@ export const getContactById = async (contactId) => {
 };
 
 export const createContact = async (contactData) => {
-  
   return await Contact.create(contactData);
 };
 
