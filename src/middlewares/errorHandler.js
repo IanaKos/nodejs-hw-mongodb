@@ -1,11 +1,8 @@
-const errorHandler = (err, req, res, next) => {
-  console.error('Error:', err);
-
-  res.status(err.status || 500).json({
-    status: err.status || 500,
-    message: err.message || 'Something went wrong',
-    data: null,
+export default function errorHandler(err, req, res, next) {
+  const status = err.status || 500;
+  res.status(status).json({
+    status,
+    message: err.message || "Something went wrong",
+    data: err.message
   });
-};
-
-export default errorHandler;
+}
