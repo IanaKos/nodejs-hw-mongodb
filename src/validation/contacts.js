@@ -1,8 +1,6 @@
 import Joi from 'joi';
 import { contactTypesList } from '../constants/contacts.js';
-
-
-export const contactSchema = Joi.object({
+export const createContactSchema = Joi.object({
   name: Joi.string().min(3).max(20).required().messages({
     'string.base': 'Username should be a string',
     'string.min': 'Username should have at least {#limit} characters',
