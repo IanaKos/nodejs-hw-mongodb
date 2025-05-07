@@ -1,39 +1,21 @@
 import mongoose from 'mongoose';
+import { env } from '../utils/env.js';
 
-export const initMongoConnection = async () => {
+export async function initMongoConnection() {
   try {
-    const { MONGODB_USER, MONGODB_PASSWORD, MONGODB_URL, MONGODB_DB } =
-      process.env;
-    
+    const user = env('MONGODB_USER');
+    const pwd = env('MONGODB_PASSWORD');
+    const url = env('MONGODB_URL');
+    const db = env('MONGODB_DB');
 
-    if (!MONGODB_USER || !MONGODB_PASSWORD || !MONGODB_URL || !MONGODB_DB) {
-      throw new Error(
-        'Одна або декілька змінних оточення MongoDB не визначені',
-      );
-    }
-
-    const connectionString = `mongodb+srv://${encodeURIComponent(
-      MONGODB_USER,
-    )}:${encodeURIComponent(
-      MONGODB_PASSWORD,
-      )}@${MONGODB_URL}/${MONGODB_DB}?retryWrites=true&w=majority`;
-    mongoose.set('strictQuery', true); // Включає сувору перевірку запитів
-    mongoose.set('bufferCommands', false); // Вимикає буферизацію команд
-
-    await mongoose.connect(connectionString);
+    await mongoose.connect(`mongodb+srv://${user}:${pwd}@${url}/${db}`);
     console.log('Mongo connection successfully established!');
-    mongoose.connection.on('disconnected', () => {
-      console.warn('⚠️ MongoDB disconnected!');
-    });
-
-    mongoose.connection.on('error', (err) => {
-      console.error('❌ MongoDB connection error:', err.message);
-    });
-
-
-
-  } catch (error) {
-    console.error('Error connecting to MongoDB:', error.message);
-    process.exit(1);
+  } catch (e) {
+    console.log('Error while setting up mongo connection', e);
+    throw e;
   }
-};
+}
+
+
+
+  
