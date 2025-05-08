@@ -1,51 +1,51 @@
-import { model, Schema } from 'mongoose';
-import { contactTypesList } from '../../constants/contacts.js';
-import { handleSaveError, setUpdateSettings } from './hooks.js';
+import mongoose from 'mongoose';
 
-const contactsSchema = new Schema(
+
+const contactSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      minLength: 3,
-      maxLength: 20,
       required: true,
     },
     phoneNumber: {
       type: String,
-      minLength: 3,
-      maxLength: 20,
+      
       required: true,
     },
     email: {
       type: String,
-      required: false,
+      
     },
     isFavourite: {
       type: Boolean,
-      required: false,
+     
       default: false,
     },
     contactType: {
       type: String,
       required: true,
-      enum: contactTypesList,
+      enum: ['work', 'home', 'personal'],
+      required: true,
+      default: 'personal',
     },
     userId: {
-      type: Schema.Types.ObjectId,
-      ref: 'users',
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
     },
+  photo: {
+      type: String,
+      default: null,
+    },
   },
+
   {
     timestamps: true,
     versionKey: false,
   },
 );
+const Contact = mongoose.model('Contact', contactSchema);
 
-contactsSchema.post('save', handleSaveError);
-contactsSchema.pre('findOneAndUpdate', setUpdateSettings);
-contactsSchema.post('findOneAndUpdate', handleSaveError);
+export default Contact;
 
-export const sortByList = ['name', 'phoneNumber', 'email'];
 
-export const ContactsCollection = model('contacts', contactsSchema);
