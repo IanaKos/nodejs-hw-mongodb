@@ -1,19 +1,36 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+import createHttpError from 'http-errors';
+import Session from '../db/models/session.js';
+import User from '../db/models/user.js';
 
-dotenv.config();
-
-const initMongoConnection = async () => {
+const authenticate = async (req, _res, next) => {
   try {
-    const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_URL}/${process.env.MONGODB_DB}?retryWrites=true&w=majority`;
+    const authHeader = req.headers.authorization;
 
-    await mongoose.connect(uri);
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw createHttpError(401, 'Missing or invalid Authorization header');
+    }
 
-    console.log('Mongo connection successfully established!');
+    const accessToken = authHeader.split(' ')[1];
+    const session = await Session.findOne({ accessToken });
+
+    if (!session) {
+      throw createHttpError(401, 'Invalid access token');
+    }
+
+    if (new Date() > session.accessTokenValidUntil) {
+      throw createHttpError(401, 'Access token expired');
+    }
+
+    const user = await User.findById(session.userId);
+    if (!user) {
+      throw createHttpError(401, 'User not found');
+    }
+
+    req.user = user;
+    next();
   } catch (error) {
-    console.error('Mongo connection error:', error.message);
-    process.exit(1);
+    next(error);
   }
 };
 
-export default initMongoConnection;
+export default authenticate;
